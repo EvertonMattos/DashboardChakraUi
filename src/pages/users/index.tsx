@@ -1,15 +1,19 @@
 
-import { Box, Button,Text,Flex,Heading, Icon, Table, Th, Thead, Tr,Td,Checkbox, Tbody, useBreakpointValue} from '@chakra-ui/react'
+import { Box, Button,Text,Flex,Heading, Icon, Table, Th, Thead, Tr,Td,Checkbox, Tbody, useBreakpointValue, Spinner} from '@chakra-ui/react'
 import {RiAddBoxLine, RiPencilLine} from 'react-icons/ri'
 import  {Header} from '../../components/Header'
 import { Pagination } from '../../components/PaginationItem/Pagination'
 import  {SideBar} from '../../components/SiderBar/index'
 import Link from 'next/link'
+import { userUsers } from '../../components/service/hooks/useUsers'
 export default function UserList(){
+  const {data, isLoading,isFetching,error} =userUsers()
+// console.log(data)
   const isDrawalerSidebar= useBreakpointValue({
     base:false,
     lg:true,
   })
+ 
   return(
     <Box>
       <Header/>
@@ -19,6 +23,7 @@ export default function UserList(){
         <Flex mb='8' justify='space-between' alignItems='center'>
         <Heading size='lg' fontWeight='normal' >
          Usuários 
+         {!isLoading && isFetching && <Spinner size='sm' color='gray.500' ml='4'/>}
         </Heading>
         <Link href='/users/create' passHref>
         <Button 
@@ -32,7 +37,17 @@ export default function UserList(){
         </Button>
         </Link>
         </Flex>    
-        <Table colorScheme='whiteAlpha'>
+          {isLoading ? (
+            <Flex justify='center'>
+              <Spinner/>
+            </Flex>
+          ):error?(
+            <Flex justify='center'>
+              <Text>Falla ao obter dados do servidor</Text>
+            </Flex>
+          ):(
+            <>
+            <Table colorScheme='whiteAlpha'>
           <Thead>
             <Tr>
             <Th px={['4','4','6']} color='gray.300' width='8' >
@@ -46,18 +61,20 @@ export default function UserList(){
     
           </Thead>
           <Tbody>
-            <Tr>
+           {data.map(user=>{
+            return(
+              <Tr key={user.id}>
               <Td  px={['4','4','6']}>
               <Checkbox colorScheme='pink'/>
               </Td>
               <Td>
                 <Box >
-                  <Text fontWeight='bold'>Everton Mattos</Text>
-                  <Text fontSize='sm' color='gray.300'>devsukita@gmail.com</Text>
+                  <Text fontWeight='bold'>{user.name}</Text>
+                  <Text fontSize='sm' color='gray.300'>{user.email}</Text>
                 </Box>
               </Td>
               {isDrawalerSidebar &&(<Td>
-               04 de Abril, 2022
+               {user.createdAt}
               </Td>)}
               <Td>
               <Button 
@@ -71,9 +88,13 @@ export default function UserList(){
         </Button>
               </Td>
             </Tr>
+            )
+           })}
           </Tbody>
         </Table>
         <Pagination/>
+            </>
+          )}
         </Box>
       </Flex>
     </Box>
